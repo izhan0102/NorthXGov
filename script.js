@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // Contact Form Handling is now handled by the enhanced form below
 
-    // Smooth scrolling for anchor links
+    // Smooth scrolling for anchor links with service pre-selection
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
@@ -36,6 +36,19 @@ document.addEventListener('DOMContentLoaded', function () {
             if (target) {
                 const navHeight = document.querySelector('.navbar').offsetHeight;
                 const targetPosition = target.offsetTop - navHeight - 20;
+
+                // Pre-select service if coming from service card
+                const serviceType = this.getAttribute('data-service');
+                if (serviceType && target.id === 'contact') {
+                    setTimeout(() => {
+                        const projectTypeSelect = document.getElementById('projectType');
+                        if (projectTypeSelect) {
+                            projectTypeSelect.value = serviceType;
+                            // Trigger change event to ensure any dependent functionality works
+                            projectTypeSelect.dispatchEvent(new Event('change'));
+                        }
+                    }, 500); // Small delay to ensure form is visible
+                }
 
                 window.scrollTo({
                     top: targetPosition,
