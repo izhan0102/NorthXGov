@@ -82,15 +82,14 @@
 }
 
 .who-we-serve-visual .image-container {
-    max-width: 400px;
-    width: 100%;
-    height: auto;
+    width: 400px;
+    height: 300px;
 }
 
 .who-we-serve-visual .section-image {
     width: 100%;
-    height: auto;
-    object-fit: contain;
+    height: 100%;
+    object-fit: cover;
     border-radius: 16px;
 }
 
