@@ -1,29 +1,46 @@
 // Mobile Navigation Toggle
 document.addEventListener('DOMContentLoaded', function () {
-    const hamburger = document.querySelector('.hamburger');
-    const navMenu = document.querySelector('.nav-menu');
+    const mobileToggle = document.querySelector('.mobile-menu-toggle');
+    const mobileOverlay = document.querySelector('.mobile-menu-overlay');
+    const body = document.body;
 
-    if (hamburger && navMenu) {
-        hamburger.addEventListener('click', function () {
-            hamburger.classList.toggle('active');
-            navMenu.classList.toggle('active');
+    if (mobileToggle && mobileOverlay) {
+        // Toggle mobile menu
+        mobileToggle.addEventListener('click', function (e) {
+            e.stopPropagation();
+            mobileToggle.classList.toggle('active');
+            mobileOverlay.classList.toggle('active');
+            body.classList.toggle('menu-open');
         });
 
-        // Close menu when clicking on a link
-        document.querySelectorAll('.nav-link').forEach(link => {
+        // Close menu when clicking on overlay
+        mobileOverlay.addEventListener('click', function (e) {
+            if (e.target === mobileOverlay) {
+                closeMobileMenu();
+            }
+        });
+
+        // Close menu when clicking on mobile nav links
+        document.querySelectorAll('.mobile-nav-link').forEach(link => {
             link.addEventListener('click', () => {
-                hamburger.classList.remove('active');
-                navMenu.classList.remove('active');
+                closeMobileMenu();
             });
         });
 
-        // Close menu when clicking outside
-        document.addEventListener('click', function (e) {
-            if (!hamburger.contains(e.target) && !navMenu.contains(e.target)) {
-                hamburger.classList.remove('active');
-                navMenu.classList.remove('active');
+
+
+        // Close menu with Escape key
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && mobileOverlay.classList.contains('active')) {
+                closeMobileMenu();
             }
         });
+
+        function closeMobileMenu() {
+            mobileToggle.classList.remove('active');
+            mobileOverlay.classList.remove('active');
+            body.classList.remove('menu-open');
+        }
     }
 
     // Contact Form Handling is now handled by the enhanced form below
@@ -34,7 +51,8 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             const target = document.querySelector(this.getAttribute('href'));
             if (target) {
-                const navHeight = document.querySelector('.navbar').offsetHeight;
+                const navbar = document.querySelector('.navbar');
+                const navHeight = navbar ? navbar.offsetHeight : 90;
                 const targetPosition = target.offsetTop - navHeight - 20;
 
                 // Pre-select service if coming from service card
@@ -140,7 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // Add loading animation to CTA buttons
-    document.querySelectorAll('.btn-primary-large, .nav-cta').forEach(button => {
+    document.querySelectorAll('.btn-primary-large').forEach(button => {
         button.addEventListener('click', function (e) {
             // Only add loading effect if it's not a form submit or external link
             const href = this.getAttribute('href');
@@ -224,7 +242,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
     images.forEach(img => imageObserver.observe(img));
 
-    // Add keyboard navigation support
+    // Add keyboard navigation support - Navigation removed but mechanism preserved
+    /* 
     document.addEventListener('keydown', function (e) {
         // Close mobile menu with Escape key
         if (e.key === 'Escape') {
@@ -236,6 +255,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         }
     });
+    */
 
     // Performance optimization: Throttle scroll events
     function throttle(func, limit) {
@@ -320,10 +340,8 @@ additionalStyles.textContent = `
     }
 
     /* Improved focus states for accessibility */
-    .nav-link:focus,
     .btn-primary-large:focus,
-    .btn-text:focus,
-    .nav-cta:focus {
+    .btn-text:focus {
         outline: 2px solid var(--primary-teal);
         outline-offset: 2px;
     }
