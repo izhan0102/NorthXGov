@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - NorthxGov</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: #1e293b;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1B365D 0%, #00A8B5 100%);
+            color: white;
+            padding: 16px 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .header h1 i {
+            font-size: 1.3rem;
+            color: #00A8B5;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 6px;
+            border-radius: 6px;
+        }
+
+        .logout-btn {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 255, 255, 0.25);
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #00A8B5, #1B365D);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12);
+        }
+
+        .stat-card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: white;
+        }
+
+        .stat-card h3 {
+            font-size: 0.8rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .stat-card .number {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 4px;
+            line-height: 1;
+            word-break: break-all;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .stat-card .label {
+            font-size: 0.75rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .chart-container,
+        .map-container,
+        .countries-container,
+        .recent-visits {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .chart-container:hover,
+        .map-container:hover,
+        .countries-container:hover,
+        .recent-visits:hover {
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        .chart-container {
+            height: 320px;
+        }
+
+        .countries-container {
+            height: 320px;
+            overflow-y: auto;
+        }
+
+        .recent-visits {
+            height: 350px;
+            overflow-y: auto;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .section-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: white;
+        }
+
+        .section-header h3 {
+            color: #1e293b;
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        #map {
+            height: 280px;
+            border-radius: 8px;
+        }
+
+        #dailyChart {
+            max-height: 220px;
+        }
+
+        #countriesList {
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        #recentVisits {
+            max-height: 270px;
+            overflow-y: auto;
+        }
+
+        .country-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+        }
+
+        .country-item:hover {
+            background: #f8fafc;
+            margin: 0 -12px;
+            padding: 12px;
+            border-radius: 6px;
+        }
+
+        .country-item:last-child {
+            border-bottom: none;
+        }
+
+        .country-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .country-flag {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            background: linear-gradient(135deg, #00A8B5, #1B365D);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .country-name {
+            font-weight: 500;
+            color: #1e293b;
+            font-size: 0.9rem;
+        }
+
+        .country-count {
+            background: linear-gradient(135deg, #00A8B5, #1B365D);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            box-shadow: 0 2px 6px rgba(0, 168, 181, 0.2);
+        }
+
+        .visit-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 0;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s ease;
+        }
+
+        .visit-item:hover {
+            background: #f8fafc;
+            margin: 0 -12px;
+            padding: 14px 12px;
+            border-radius: 6px;
+        }
+
+        .visit-item:last-child {
+            border-bottom: none;
+        }
+
+        .visit-info {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .visit-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
+            background: linear-gradient(135deg, #00A8B5, #1B365D);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+        }
+
+        .visit-details {
+            flex: 1;
+        }
+
+        .visit-page {
+            font-weight: 500;
+            color: #1e293b;
+            margin-bottom: 2px;
+            font-size: 0.85rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .visit-location {
+            font-size: 0.75rem;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .visit-time {
+            font-size: 0.7rem;
+            color: #94a3b8;
+            text-align: right;
+            font-weight: 500;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #64748b;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <div class="header-content">
+            <h1><i class="fas fa-chart-line"></i> NorthxGov Analytics Dashboard</h1>
+            <button class="logout-btn" id="logoutBtn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="loading" id="loading">
+            Loading analytics data...
+        </div>
+
+        <div id="dashboard" style="display: none;">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h3>Total Visitors</h3>
+                    </div>
+                    <div class="number" id="totalVisitors">0</div>
+                    <div class="label">All time</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-user-clock"></i>
+                        </div>
+                        <h3>Today's Visitors</h3>
+                    </div>
+                    <div class="number" id="todayVisitors">0</div>
+                    <div class="label">Last 24 hours</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            <i class="fas fa-globe-americas"></i>
+                        </div>
+                        <h3>Unique Countries</h3>
+                    </div>
+                    <div class="number" id="uniqueCountries">0</div>
+                    <div class="label">Geographic reach</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-header">
+                        <div class="stat-card-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
+                        <h3>Top Page</h3>
+                    </div>
+                    <div class="number" id="topPage">/</div>
+                    <div class="label">Most visited</div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Daily Visitors Chart -->
+                <div class="chart-container">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
+                            <i class="fas fa-chart-area"></i>
+                        </div>
+                        <h3>Daily Visitors (Last 7 Days)</h3>
+                    </div>
+                    <canvas id="dailyChart" width="400" height="200"></canvas>
+                </div>
+
+                <!-- Top Countries -->
+                <div class="countries-container">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            <i class="fas fa-flag"></i>
+                        </div>
+                        <h3>Top Countries</h3>
+                    </div>
+                    <div id="countriesList"></div>
+                </div>
+
+                <!-- World Map -->
+                <div class="map-container full-width">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            <i class="fas fa-map-marked-alt"></i>
+                        </div>
+                        <h3>Visitor Locations</h3>
+                    </div>
+                    <div id="map"></div>
+                </div>
+
+                <!-- Recent Visits -->
+                <div class="recent-visits full-width">
+                    <div class="section-header">
+                        <div class="section-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                            <i class="fas fa-history"></i>
+                        </div>
+                        <h3>Recent Visits</h3>
+                    </div>
+                    <div id="recentVisits"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Dashboard Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+        import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+        import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+        import { firebaseConfig } from './firebase-config.js';
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Check authentication
+        onAuthStateChanged(auth, (user) => {
+            if (!user) {
+                window.location.href = 'admin.html';
+                return;
+            }
+            loadDashboard();
+        });
+
+        // Logout functionality
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await signOut(auth);
+        });
+
+        async function loadDashboard() {
+            try {
+                const snapshot = await getDocs(collection(db, "traffic"));
+                const visits = [];
+                snapshot.forEach(doc => visits.push(doc.data()));
+
+                // Hide loading, show dashboard
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+
+                // Calculate stats
+                updateStats(visits);
+                updateCountries(visits);
+                updateMap(visits);
+                updateRecentVisits(visits);
+                updateDailyChart(visits);
+
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('loading').innerHTML = 'Error loading data. Please refresh the page.';
+            }
+        }
+
+        function updateStats(visits) {
+            // Total visitors
+            document.getElementById('totalVisitors').textContent = visits.length;
+
+            // Today's visitors
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const todayVisits = visits.filter(v => new Date(v.timestamp) >= today);
+            document.getElementById('todayVisitors').textContent = todayVisits.length;
+
+            // Unique countries
+            const countries = new Set(visits.map(v => v.country));
+            document.getElementById('uniqueCountries').textContent = countries.size;
+
+            // Top page
+            const pageCount = {};
+            visits.forEach(v => {
+                pageCount[v.path] = (pageCount[v.path] || 0) + 1;
+            });
+            const topPage = Object.entries(pageCount).sort((a, b) => b[1] - a[1])[0];
+            document.getElementById('topPage').textContent = topPage ? topPage[0] : '/';
+        }
+
+        function updateCountries(visits) {
+            const countryCount = {};
+            visits.forEach(v => {
+                if (v.country && v.country !== 'unknown') {
+                    countryCount[v.country] = (countryCount[v.country] || 0) + 1;
+                }
+            });
+
+            const sorted = Object.entries(countryCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            const countriesHtml = sorted.map(([country, count]) => `
+                <div class="country-item">
+                    <div class="country-info">
+                        <div class="country-flag">${country.charAt(0)}</div>
+                        <span class="country-name">${country}</span>
+                    </div>
+                    <span class="country-count">${count}</span>
+                </div>
+            `).join('');
+
+            document.getElementById('countriesList').innerHTML = countriesHtml;
+        }
+
+        function updateMap(visits) {
+            const map = L.map('map').setView([20, 0], 2);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            visits.forEach(visit => {
+                if (visit.latitude && visit.longitude && visit.latitude !== 0) {
+                    L.marker([visit.latitude, visit.longitude])
+                        .addTo(map)
+                        .bindPopup(`
+                            <strong>${visit.country}</strong><br>
+                            ${visit.city}<br>
+                            ${new Date(visit.timestamp).toLocaleString()}<br>
+                            Page: ${visit.path}
+                        `);
+                }
+            });
+        }
+
+        function updateRecentVisits(visits) {
+            const recent = visits
+                .sort((a, b) => b.timestamp - a.timestamp)
+                .slice(0, 20);
+
+            const recentHtml = recent.map(visit => `
+                <div class="visit-item">
+                    <div class="visit-info">
+                        <div class="visit-icon">
+                            <i class="fas fa-${visit.path === '/' ? 'home' : visit.path.includes('blog') ? 'blog' : 'file-alt'}"></i>
+                        </div>
+                        <div class="visit-details">
+                            <div class="visit-page">${visit.path}</div>
+                            <div class="visit-location">
+                                <i class="fas fa-map-marker-alt"></i>
+                                ${visit.city}, ${visit.country}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="visit-time">${new Date(visit.timestamp).toLocaleString()}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('recentVisits').innerHTML = recentHtml;
+        }
+
+        function updateDailyChart(visits) {
+            const last7Days = [];
+            const today = new Date();
+
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date(today);
+                date.setDate(date.getDate() - i);
+                date.setHours(0, 0, 0, 0);
+                last7Days.push(date);
+            }
+
+            const dailyData = last7Days.map(date => {
+                const nextDay = new Date(date);
+                nextDay.setDate(nextDay.getDate() + 1);
+
+                return visits.filter(v => {
+                    const visitDate = new Date(v.timestamp);
+                    return visitDate >= date && visitDate < nextDay;
+                }).length;
+            });
+
+            const ctx = document.getElementById('dailyChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: last7Days.map(date => date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+                    datasets: [{
+                        label: 'Daily Visitors',
+                        data: dailyData,
+                        borderColor: '#00A8B5',
+                        backgroundColor: 'rgba(0, 168, 181, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>
