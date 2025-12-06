@@ -3454,12 +3454,23 @@ We Serve responsive styles */
     }
 
     .portfolio-stats {
-        flex-direction: column;
-        gap: 20px;
+        flex-direction: row;
+        gap: 15px;
+        justify-content: center;
+        flex-wrap: wrap;
     }
 
     .stat-number {
-        font-size: 2rem;
+        font-size: 1.8rem;
+    }
+
+    .stat-item {
+        min-width: 80px;
+        flex: 1;
+    }
+
+    .stat-label {
+        font-size: 0.9rem;
     }
 
     .portfolio-cta {
