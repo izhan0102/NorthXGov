@@ -418,7 +418,7 @@
                         <div class="stat-card-icon" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8);">
                             <i class="fas fa-users"></i>
                         </div>
-                        <h3>Total Visitors</h3>
+                        <h3>Unique Visitors</h3>
                     </div>
                     <div class="number" id="totalVisitors">0</div>
                     <div class="label">All time</div>
@@ -428,7 +428,7 @@
                         <div class="stat-card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
                             <i class="fas fa-user-clock"></i>
                         </div>
-                        <h3>Today's Visitors</h3>
+                        <h3>Today's Unique</h3>
                     </div>
                     <div class="number" id="todayVisitors">0</div>
                     <div class="label">Last 24 hours</div>
@@ -553,17 +553,28 @@
         }
 
         function updateStats(visits) {
-            // Total visitors
-            document.getElementById('totalVisitors').textContent = visits.length;
+            // Total unique visitors (count unique visitorIds or IPs)
+            const uniqueVisitors = new Set();
+            visits.forEach(v => {
+                // Use visitorId if available, otherwise fall back to IP
+                const identifier = v.visitorId || v.ip || 'unknown';
+                uniqueVisitors.add(identifier);
+            });
+            document.getElementById('totalVisitors').textContent = uniqueVisitors.size;
 
-            // Today's visitors
+            // Today's unique visitors
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             const todayVisits = visits.filter(v => new Date(v.timestamp) >= today);
-            document.getElementById('todayVisitors').textContent = todayVisits.length;
+            const todayUniqueVisitors = new Set();
+            todayVisits.forEach(v => {
+                const identifier = v.visitorId || v.ip || 'unknown';
+                todayUniqueVisitors.add(identifier);
+            });
+            document.getElementById('todayVisitors').textContent = todayUniqueVisitors.size;
 
             // Unique countries
-            const countries = new Set(visits.map(v => v.country));
+            const countries = new Set(visits.map(v => v.country).filter(c => c && c !== 'unknown'));
             document.getElementById('uniqueCountries').textContent = countries.size;
 
             // Top page
