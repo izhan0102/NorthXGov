@@ -484,7 +484,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const subject = `New Consultation Request - ${data.firstName} ${data.lastName} (${serviceNames[data.projectType]})`;
 
-        const body = `Hi Aadi,
+        const body = `Greetings!,
 
 A new consultation request has been submitted through the NorthxGov website. Here are the details:
 
@@ -528,3 +528,4 @@ This email was automatically generated from the contact form submission.`;
     }
 
 }); 
+
