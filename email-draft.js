@@ -28,7 +28,7 @@ NorthxGov Website Contact Form
     `.trim();
     
     // Create Gmail URL
-    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=aadi.latief@gmail.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
+    const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=outreach@northxgov.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBody)}`;
     
     // Show success message and open Gmail
     const submitButton = contactForm.querySelector('.submit-button');
@@ -67,4 +67,5 @@ function getServiceName(projectType) {
     };
     
     return serviceNames[projectType] || projectType;
+
 }
