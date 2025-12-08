@@ -509,7 +509,7 @@ NorthxGov Website System
 This email was automatically generated from the contact form submission.`;
 
         // Create Gmail compose URL
-        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=aadi.latief@gmail.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+        const gmailUrl = `https://mail.google.com/mail/?view=cm&fs=1&to=outreach@northxgov.com&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 
         // Open Gmail in new tab
         window.open(gmailUrl, '_blank');
@@ -526,4 +526,5 @@ This email was automatically generated from the contact form submission.`;
         emailInput.required = false;
         phoneInput.required = false;
     }
+
 }); 
